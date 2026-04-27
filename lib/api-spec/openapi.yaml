@@ -3,34 +3,1029 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Smart Supply Chain – Micro-Warehouse Network for Resilient Logistics (India)
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: users
+  - name: products
+  - name: locations
+  - name: inventory
+  - name: orders
+  - name: fulfillment
+  - name: alerts
+  - name: analytics
+  - name: ai
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
           content:
             application/json:
+              schema: { $ref: "#/components/schemas/HealthStatus" }
+
+  # -----------------------------------------------------------------------
+  # Auth
+  # -----------------------------------------------------------------------
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login by email (demo)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/LoginBody" }
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "204": { description: Logged out }
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Current user
+      responses:
+        "200":
+          description: Current user (or null when unauthenticated)
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MeResponse" }
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users (admin)
+      responses:
+        "200":
+          description: Users
+          content:
+            application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                type: array
+                items: { $ref: "#/components/schemas/User" }
+
+  # -----------------------------------------------------------------------
+  # Products
+  # -----------------------------------------------------------------------
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List products
+      responses:
+        "200":
+          description: Products
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Product" }
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateProductBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateProductBody" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  # -----------------------------------------------------------------------
+  # Locations (warehouses + micro-warehouses)
+  # -----------------------------------------------------------------------
+  /locations:
+    get:
+      operationId: listLocations
+      tags: [locations]
+      summary: List locations with inventory snapshot
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [warehouse, micro]
+      responses:
+        "200":
+          description: Locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/LocationWithStats" }
+    post:
+      operationId: createLocation
+      tags: [locations]
+      summary: Create location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateLocationBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Location" }
+
+  /locations/{id}:
+    get:
+      operationId: getLocation
+      tags: [locations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Location with inventory
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/LocationDetail" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+    patch:
+      operationId: updateLocation
+      tags: [locations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateLocationBody" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Location" }
+    delete:
+      operationId: deleteLocation
+      tags: [locations]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  # -----------------------------------------------------------------------
+  # Inventory
+  # -----------------------------------------------------------------------
+  /inventory:
+    get:
+      operationId: listInventory
+      tags: [inventory]
+      summary: All inventory rows (joined product + location)
+      parameters:
+        - name: locationId
+          in: query
+          schema: { type: integer }
+        - name: productId
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Inventory rows
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/InventoryRow" }
+    post:
+      operationId: createInventory
+      tags: [inventory]
+      summary: Place product at a location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateInventoryBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InventoryRow" }
+
+  /inventory/{id}:
+    patch:
+      operationId: updateInventory
+      tags: [inventory]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateInventoryBody" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InventoryRow" }
+    delete:
+      operationId: deleteInventory
+      tags: [inventory]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /inventory/shortages:
+    get:
+      operationId: listShortages
+      tags: [inventory]
+      summary: Inventory rows below threshold
+      responses:
+        "200":
+          description: Shortages
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ShortageRow" }
+
+  # -----------------------------------------------------------------------
+  # Fulfillment
+  # -----------------------------------------------------------------------
+  /fulfillment/suggest:
+    post:
+      operationId: suggestFulfillment
+      tags: [fulfillment]
+      summary: Recommend nearest sources for a delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SuggestFulfillmentBody" }
+      responses:
+        "200":
+          description: Suggested fulfillment sources (ranked)
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/FulfillmentSuggestion" }
+
+  # -----------------------------------------------------------------------
+  # Orders
+  # -----------------------------------------------------------------------
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List orders
+      parameters:
+        - name: customerId
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Order" }
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Place order (auto-routes to nearest source)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateOrderBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "409":
+          description: No stock available
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
+  /orders/{id}/status:
+    patch:
+      operationId: updateOrderStatus
+      tags: [orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateOrderStatusBody" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Order" }
+
+  # -----------------------------------------------------------------------
+  # Alerts
+  # -----------------------------------------------------------------------
+  /alerts:
+    get:
+      operationId: listAlerts
+      tags: [alerts]
+      summary: Active stock & ops alerts
+      responses:
+        "200":
+          description: Alerts
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Alert" }
+
+  /alerts/{id}/resolve:
+    patch:
+      operationId: resolveAlert
+      tags: [alerts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Resolved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Alert" }
+
+  # -----------------------------------------------------------------------
+  # Analytics (wow endpoints)
+  # -----------------------------------------------------------------------
+  /analytics/summary:
+    get:
+      operationId: getAnalyticsSummary
+      tags: [analytics]
+      summary: Top-level KPIs across the network
+      responses:
+        "200":
+          description: Summary KPIs
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AnalyticsSummary" }
+
+  /analytics/inventory-trends:
+    get:
+      operationId: getInventoryTrends
+      tags: [analytics]
+      summary: Daily inventory trend (last N days)
+      parameters:
+        - name: days
+          in: query
+          schema: { type: integer, default: 14 }
+      responses:
+        "200":
+          description: Trend points
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TrendPoint" }
+
+  /analytics/demand-by-region:
+    get:
+      operationId: getDemandByRegion
+      tags: [analytics]
+      summary: Demand by region (state)
+      responses:
+        "200":
+          description: Region demand
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/RegionDemand" }
+
+  /analytics/region-heatmap:
+    get:
+      operationId: getRegionHeatmap
+      tags: [analytics]
+      summary: Region-wise stock health heatmap
+      responses:
+        "200":
+          description: Heatmap cells
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/HeatmapCell" }
+
+  /analytics/delivery-efficiency:
+    get:
+      operationId: getDeliveryEfficiency
+      tags: [analytics]
+      summary: Delivery efficiency metrics
+      responses:
+        "200":
+          description: Delivery efficiency
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeliveryEfficiency" }
+
+  /analytics/forecast:
+    get:
+      operationId: getDemandForecast
+      tags: [analytics]
+      summary: Simple demand forecast per product (next 7 days)
+      responses:
+        "200":
+          description: Forecast points per product
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/ProductForecast" }
+
+  # -----------------------------------------------------------------------
+  # AI Assistant
+  # -----------------------------------------------------------------------
+  /ai/chat:
+    post:
+      operationId: aiChat
+      tags: [ai]
+      summary: Ask the supply chain assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AiChatBody" }
+      responses:
+        "200":
+          description: AI reply
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AiChatResponse" }
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    ApiError:
+      type: object
+      properties:
+        error: { type: string }
+      required: [error]
+
+    Role:
+      type: string
+      enum: [admin, manager, retail, customer]
+
+    LocationType:
+      type: string
+      enum: [warehouse, micro]
+
+    StockStatus:
+      type: string
+      enum: [healthy, low, critical]
+
+    OrderStatus:
+      type: string
+      enum: [pending, dispatched, in_transit, delivered, cancelled]
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string }
+        name: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+        city: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [id, email, name, role, city, createdAt]
+
+    LoginBody:
+      type: object
+      properties:
+        email: { type: string }
+      required: [email]
+
+    MeResponse:
+      type: object
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/User"
+            - type: "null"
+      required: [user]
+
+    Product:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        sku: { type: string }
+        category: { type: string }
+        unitPrice: { type: number }
+        imageUrl:
+          type: ["string", "null"]
+        createdAt: { type: string, format: date-time }
+      required: [id, name, sku, category, unitPrice, createdAt]
+
+    CreateProductBody:
+      type: object
+      properties:
+        name: { type: string }
+        sku: { type: string }
+        category: { type: string }
+        unitPrice: { type: number }
+        imageUrl:
+          type: ["string", "null"]
+      required: [name, sku, category, unitPrice]
+
+    UpdateProductBody:
+      type: object
+      properties:
+        name: { type: string }
+        sku: { type: string }
+        category: { type: string }
+        unitPrice: { type: number }
+        imageUrl:
+          type: ["string", "null"]
+
+    Location:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        type: { $ref: "#/components/schemas/LocationType" }
+        city: { type: string }
+        state: { type: string }
+        address: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        capacity: { type: integer }
+        contactName:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+        createdAt: { type: string, format: date-time }
+      required: [id, name, type, city, state, address, lat, lng, capacity, createdAt]
+
+    LocationWithStats:
+      allOf:
+        - $ref: "#/components/schemas/Location"
+        - type: object
+          properties:
+            totalUnits: { type: integer }
+            distinctSkus: { type: integer }
+            stockStatus: { $ref: "#/components/schemas/StockStatus" }
+            utilizationPct: { type: number }
+          required: [totalUnits, distinctSkus, stockStatus, utilizationPct]
+
+    LocationDetail:
+      allOf:
+        - $ref: "#/components/schemas/LocationWithStats"
+        - type: object
+          properties:
+            inventory:
+              type: array
+              items: { $ref: "#/components/schemas/InventoryRow" }
+          required: [inventory]
+
+    CreateLocationBody:
+      type: object
+      properties:
+        name: { type: string }
+        type: { $ref: "#/components/schemas/LocationType" }
+        city: { type: string }
+        state: { type: string }
+        address: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        capacity: { type: integer }
+        contactName:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+      required: [name, type, city, state, address, lat, lng, capacity]
+
+    UpdateLocationBody:
+      type: object
+      properties:
+        name: { type: string }
+        type: { $ref: "#/components/schemas/LocationType" }
+        city: { type: string }
+        state: { type: string }
+        address: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        capacity: { type: integer }
+        contactName:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+
+    InventoryRow:
+      type: object
+      properties:
+        id: { type: integer }
+        productId: { type: integer }
+        locationId: { type: integer }
+        quantity: { type: integer }
+        threshold: { type: integer }
+        productName: { type: string }
+        productSku: { type: string }
+        productCategory: { type: string }
+        locationName: { type: string }
+        locationType: { $ref: "#/components/schemas/LocationType" }
+        locationCity: { type: string }
+        locationState: { type: string }
+        stockStatus: { $ref: "#/components/schemas/StockStatus" }
+        updatedAt: { type: string, format: date-time }
+      required:
+        [id, productId, locationId, quantity, threshold, productName, productSku,
+         productCategory, locationName, locationType, locationCity, locationState,
+         stockStatus, updatedAt]
+
+    CreateInventoryBody:
+      type: object
+      properties:
+        productId: { type: integer }
+        locationId: { type: integer }
+        quantity: { type: integer }
+        threshold: { type: integer }
+      required: [productId, locationId, quantity, threshold]
+
+    UpdateInventoryBody:
+      type: object
+      properties:
+        quantity: { type: integer }
+        threshold: { type: integer }
+
+    ShortageRow:
+      allOf:
+        - $ref: "#/components/schemas/InventoryRow"
+        - type: object
+          properties:
+            shortfall: { type: integer }
+            nearestAlternativeName:
+              type: ["string", "null"]
+            nearestAlternativeDistanceKm:
+              type: ["number", "null"]
+          required: [shortfall]
+
+    SuggestFulfillmentBody:
+      type: object
+      properties:
+        productId: { type: integer }
+        quantity: { type: integer }
+        deliveryLat: { type: number }
+        deliveryLng: { type: number }
+      required: [productId, quantity, deliveryLat, deliveryLng]
+
+    FulfillmentSuggestion:
+      type: object
+      properties:
+        locationId: { type: integer }
+        locationName: { type: string }
+        locationType: { $ref: "#/components/schemas/LocationType" }
+        city: { type: string }
+        state: { type: string }
+        lat: { type: number }
+        lng: { type: number }
+        availableQuantity: { type: integer }
+        distanceKm: { type: number }
+        etaMinutes: { type: integer }
+        score: { type: number }
+      required:
+        [locationId, locationName, locationType, city, state, lat, lng,
+         availableQuantity, distanceKm, etaMinutes, score]
+
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        customerId: { type: integer }
+        customerName: { type: string }
+        productId: { type: integer }
+        productName: { type: string }
+        productSku: { type: string }
+        quantity: { type: integer }
+        sourceLocationId:
+          type: ["integer", "null"]
+        sourceLocationName:
+          type: ["string", "null"]
+        sourceLocationType:
+          oneOf:
+            - $ref: "#/components/schemas/LocationType"
+            - type: "null"
+        deliveryAddress: { type: string }
+        deliveryCity: { type: string }
+        deliveryLat: { type: number }
+        deliveryLng: { type: number }
+        distanceKm: { type: number }
+        etaMinutes: { type: integer }
+        status: { $ref: "#/components/schemas/OrderStatus" }
+        totalPrice: { type: number }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required:
+        [id, customerId, customerName, productId, productName, productSku,
+         quantity, deliveryAddress, deliveryCity, deliveryLat, deliveryLng,
+         distanceKm, etaMinutes, status, totalPrice, createdAt, updatedAt]
+
+    CreateOrderBody:
+      type: object
+      properties:
+        customerId: { type: integer }
+        productId: { type: integer }
+        quantity: { type: integer }
+        deliveryAddress: { type: string }
+        deliveryCity: { type: string }
+        deliveryLat: { type: number }
+        deliveryLng: { type: number }
+      required:
+        [customerId, productId, quantity, deliveryAddress, deliveryCity,
+         deliveryLat, deliveryLng]
+
+    UpdateOrderStatusBody:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/OrderStatus" }
+      required: [status]
+
+    Alert:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { type: string }
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        message: { type: string }
+        locationId:
+          type: ["integer", "null"]
+        locationName:
+          type: ["string", "null"]
+        productId:
+          type: ["integer", "null"]
+        productName:
+          type: ["string", "null"]
+        resolved: { type: boolean }
+        createdAt: { type: string, format: date-time }
+      required: [id, type, severity, message, resolved, createdAt]
+
+    AnalyticsSummary:
+      type: object
+      properties:
+        totalLocations: { type: integer }
+        totalWarehouses: { type: integer }
+        totalMicroWarehouses: { type: integer }
+        totalProducts: { type: integer }
+        totalUnits: { type: integer }
+        totalOrders: { type: integer }
+        ordersToday: { type: integer }
+        activeAlerts: { type: integer }
+        criticalShortages: { type: integer }
+        avgDeliveryMinutes: { type: number }
+        avgDistanceKm: { type: number }
+        microWarehouseSharePct: { type: number }
+        revenue: { type: number }
+        ordersByStatus:
+          type: array
+          items:
+            type: object
+            properties:
+              status: { $ref: "#/components/schemas/OrderStatus" }
+              count: { type: integer }
+            required: [status, count]
+      required:
+        [totalLocations, totalWarehouses, totalMicroWarehouses, totalProducts,
+         totalUnits, totalOrders, ordersToday, activeAlerts, criticalShortages,
+         avgDeliveryMinutes, avgDistanceKm, microWarehouseSharePct, revenue,
+         ordersByStatus]
+
+    TrendPoint:
+      type: object
+      properties:
+        date: { type: string }
+        totalUnits: { type: integer }
+        ordersCount: { type: integer }
+        shortagesCount: { type: integer }
+      required: [date, totalUnits, ordersCount, shortagesCount]
+
+    RegionDemand:
+      type: object
+      properties:
+        state: { type: string }
+        ordersCount: { type: integer }
+        unitsSold: { type: integer }
+        revenue: { type: number }
+      required: [state, ordersCount, unitsSold, revenue]
+
+    HeatmapCell:
+      type: object
+      properties:
+        state: { type: string }
+        city: { type: string }
+        totalUnits: { type: integer }
+        locationsCount: { type: integer }
+        shortagesCount: { type: integer }
+        stockStatus: { $ref: "#/components/schemas/StockStatus" }
+      required: [state, city, totalUnits, locationsCount, shortagesCount, stockStatus]
+
+    DeliveryEfficiency:
+      type: object
+      properties:
+        avgDistanceKm: { type: number }
+        avgEtaMinutes: { type: number }
+        ordersFromMicro: { type: integer }
+        ordersFromWarehouse: { type: integer }
+        onTimePct: { type: number }
+        byDay:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string }
+              avgEtaMinutes: { type: number }
+              ordersCount: { type: integer }
+            required: [date, avgEtaMinutes, ordersCount]
+      required: [avgDistanceKm, avgEtaMinutes, ordersFromMicro, ordersFromWarehouse, onTimePct, byDay]
+
+    ProductForecast:
+      type: object
+      properties:
+        productId: { type: integer }
+        productName: { type: string }
+        category: { type: string }
+        currentStock: { type: integer }
+        avgDailyDemand: { type: number }
+        forecast:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string }
+              expectedDemand: { type: number }
+            required: [date, expectedDemand]
+        daysUntilStockout:
+          type: ["number", "null"]
+      required: [productId, productName, category, currentStock, avgDailyDemand, forecast]
+
+    AiChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content: { type: string }
+      required: [role, content]
+
+    AiChatBody:
+      type: object
+      properties:
+        message: { type: string }
+        history:
+          type: array
+          items: { $ref: "#/components/schemas/AiChatMessage" }
+      required: [message]
+
+    AiChatResponse:
+      type: object
+      properties:
+        reply: { type: string }
+        sources:
+          type: array
+          items: { type: string }
+      required: [reply, sources]
