@@ -18,6 +18,7 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 async function ensureSchema() {
+  if (process.env.NODE_ENV !== "production") return;
   await pool.query(
     `ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash text`,
   );
