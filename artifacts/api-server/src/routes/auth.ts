@@ -1,15 +1,8 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { db, usersTable } from "@workspace/db";
+import { db, pool, usersTable } from "@workspace/db";
 import { LoginBody, RegisterBody } from "@workspace/api-zod";
-import type { User } from "@workspace/db";
-
-function safeUser(user: User) {
-  const { passwordHash: _ph, ...rest } = user;
-  void _ph;
-  return rest;
-}
 
 const router: IRouter = Router();
 
@@ -19,6 +12,28 @@ const DEMO_EMAILS = new Set([
   "retail@scn.in",
   "customer@scn.in",
 ]);
+
+type UserRow = {
+  id: number;
+  email: string;
+  name: string;
+  role: string;
+  city: string;
+  created_at: Date;
+};
+
+type UserRowWithHash = UserRow & { password_hash: string | null };
+
+function toResponse(row: UserRow) {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    role: row.role,
+    city: row.city,
+    createdAt: row.created_at,
+  };
+}
 
 router.post("/auth/register", async (req, res): Promise<void> => {
   const parsed = RegisterBody.safeParse(req.body);
@@ -47,13 +62,16 @@ router.post("/auth/register", async (req, res): Promise<void> => {
 
   const passwordHash = await bcrypt.hash(password, 10);
 
-  const [user] = await db
-    .insert(usersTable)
-    .values({ email: normalEmail, name, city, role, passwordHash })
-    .returning();
+  const result = await pool.query<UserRow>(
+    `INSERT INTO users (email, name, role, city, password_hash)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING id, email, name, role, city, created_at`,
+    [normalEmail, name, role, city, passwordHash],
+  );
 
-  req.session.userId = user!.id;
-  res.status(201).json(safeUser(user!));
+  const user = result.rows[0]!;
+  req.session.userId = user.id;
+  res.status(201).json(toResponse(user));
 });
 
 router.post("/auth/login", async (req, res): Promise<void> => {
@@ -66,18 +84,20 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   const { email, password } = parsed.data;
   const normalEmail = email.toLowerCase().trim();
 
-  const [user] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, normalEmail));
+  const result = await pool.query<UserRowWithHash>(
+    `SELECT id, email, name, role, city, created_at, password_hash
+     FROM users WHERE email = $1`,
+    [normalEmail],
+  );
 
-  if (!user) {
+  const row = result.rows[0];
+  if (!row) {
     res.status(401).json({ error: "Invalid email or password" });
     return;
   }
 
-  if (user.passwordHash) {
-    const ok = await bcrypt.compare(password, user.passwordHash);
+  if (row.password_hash) {
+    const ok = await bcrypt.compare(password, row.password_hash);
     if (!ok) {
       res.status(401).json({ error: "Invalid email or password" });
       return;
@@ -89,8 +109,8 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     }
   }
 
-  req.session.userId = user.id;
-  res.json(safeUser(user));
+  req.session.userId = row.id;
+  res.json(toResponse(row));
 });
 
 router.post("/auth/logout", async (req, res): Promise<void> => {
@@ -110,7 +130,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
     .select()
     .from(usersTable)
     .where(eq(usersTable.id, userId));
-  res.json({ user: user ? safeUser(user) : null });
+  res.json({ user: user ?? null });
 });
 
 export default router;
