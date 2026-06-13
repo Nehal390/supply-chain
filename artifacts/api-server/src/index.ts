@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { ensureSeeded } from "./seed";
+import { pool } from "@workspace/db";
 
 const rawPort = process.env["PORT"];
 
@@ -16,7 +17,14 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-ensureSeeded()
+async function ensureSchema() {
+  await pool.query(
+    `ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash text`,
+  );
+}
+
+ensureSchema()
+  .then(() => ensureSeeded())
   .then(() => {
     app.listen(port, (err) => {
       if (err) {
@@ -27,6 +35,6 @@ ensureSeeded()
     });
   })
   .catch((err) => {
-    logger.error({ err }, "Seed failed, aborting startup");
+    logger.error({ err }, "Startup failed, aborting");
     process.exit(1);
   });
