@@ -167,3 +167,6 @@ overrides:
   brace-expansion: "2.1.1"
   qs: "^6.15.2"
   postcss: "^8.5.15"
+
+allowBuilds:
+  esbuild: true

@@ -27,7 +27,7 @@ export default function Inventory() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [filterLocation, setFilterLocation] = useState<string>("all");
-  
+
   const locationIdParam = filterLocation !== "all" ? Number(filterLocation) : undefined;
   const { data: inventory, isLoading } = useListInventory(
     { locationId: locationIdParam },
@@ -36,7 +36,7 @@ export default function Inventory() {
 
   const { data: locations } = useListLocations();
   const { data: products } = useListProducts();
-  
+
   const createMutation = useCreateInventory({
     mutation: { onSuccess: () => queryClient.invalidateQueries({ queryKey: getListInventoryQueryKey() }) }
   });
@@ -81,8 +81,8 @@ export default function Inventory() {
     }
   };
 
-  const filtered = inventory?.filter(item => 
-    item.productName.toLowerCase().includes(search.toLowerCase()) || 
+  const filtered = inventory?.filter(item =>
+    item.productName.toLowerCase().includes(search.toLowerCase()) ||
     item.productSku.toLowerCase().includes(search.toLowerCase()) ||
     item.locationName.toLowerCase().includes(search.toLowerCase())
   ) || [];
@@ -112,32 +112,32 @@ export default function Inventory() {
                     <FormItem>
                       <FormLabel>Product</FormLabel>
                       <Select onValueChange={(val) => field.onChange(Number(val))} value={field.value ? field.value.toString() : ""} disabled={!!editingId}>
-                        <FormControl><SelectTrigger data-testid="select-product"><SelectValue placeholder="Select product"/></SelectTrigger></FormControl>
+                        <FormControl><SelectTrigger data-testid="select-product"><SelectValue placeholder="Select product" /></SelectTrigger></FormControl>
                         <SelectContent>
                           {products?.map(p => <SelectItem key={p.id} value={p.id.toString()}>{p.name} ({p.sku})</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      <FormMessage/>
+                      <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={form.control} name="locationId" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Location</FormLabel>
                       <Select onValueChange={(val) => field.onChange(Number(val))} value={field.value ? field.value.toString() : ""} disabled={!!editingId}>
-                        <FormControl><SelectTrigger data-testid="select-location"><SelectValue placeholder="Select location"/></SelectTrigger></FormControl>
+                        <FormControl><SelectTrigger data-testid="select-location"><SelectValue placeholder="Select location" /></SelectTrigger></FormControl>
                         <SelectContent>
                           {locations?.map(l => <SelectItem key={l.id} value={l.id.toString()}>{l.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
-                      <FormMessage/>
+                      <FormMessage />
                     </FormItem>
                   )} />
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={form.control} name="quantity" render={({ field }) => (
-                      <FormItem><FormLabel>Quantity</FormLabel><FormControl><Input type="number" {...field} data-testid="input-quantity" /></FormControl><FormMessage/></FormItem>
+                      <FormItem><FormLabel>Quantity</FormLabel><FormControl><Input type="number" {...field} data-testid="input-quantity" /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField control={form.control} name="threshold" render={({ field }) => (
-                      <FormItem><FormLabel>Min Threshold</FormLabel><FormControl><Input type="number" {...field} data-testid="input-threshold" /></FormControl><FormMessage/></FormItem>
+                      <FormItem><FormLabel>Min Threshold</FormLabel><FormControl><Input type="number" {...field} data-testid="input-threshold" /></FormControl><FormMessage /></FormItem>
                     )} />
                   </div>
                   <Button type="submit" className="w-full" disabled={createMutation.isPending || updateMutation.isPending} data-testid="button-submit">
@@ -153,9 +153,9 @@ export default function Inventory() {
       <div className="flex flex-col sm:flex-row items-center gap-4">
         <div className="flex items-center gap-2 w-full sm:max-w-sm relative">
           <Search className="w-4 h-4 text-muted-foreground absolute left-3" />
-          <Input 
-            placeholder="Search product or location..." 
-            value={search} 
+          <Input
+            placeholder="Search product or location..."
+            value={search}
             onChange={e => setSearch(e.target.value)}
             className="pl-9"
             data-testid="input-search"
@@ -208,7 +208,7 @@ export default function Inventory() {
               </TableRow>
             ) : (
               filtered.map((item) => (
-                <TableRow key={item.id} className={item.quantity <= item.threshold ? "bg-destructive/5" : ""}>
+                <TableRow key={item.id} className={item.quantity < item.threshold ? "bg-destructive/5" : ""}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <Box className="w-4 h-4 text-muted-foreground" />
@@ -226,14 +226,14 @@ export default function Inventory() {
                     </div>
                     <div className="text-xs text-muted-foreground ml-4">{item.locationCity}</div>
                   </TableCell>
-                  <TableCell className={`text-right font-medium ${item.quantity <= item.threshold ? 'text-destructive' : ''}`}>
+                  <TableCell className={`text-right font-medium ${item.quantity < item.threshold ? 'text-destructive' : ''}`}>
                     {item.quantity.toLocaleString()}
                   </TableCell>
                   <TableCell className="text-right text-muted-foreground">
                     {item.threshold.toLocaleString()}
                   </TableCell>
                   <TableCell className="text-center">
-                    {item.quantity <= item.threshold ? (
+                    {item.quantity < item.threshold ? (
                       <Badge variant="destructive" className="gap-1">
                         <AlertCircle className="w-3 h-3" /> Low Stock
                       </Badge>

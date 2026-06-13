@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, lt, sql } from "drizzle-orm";
+import { eq, and, lt, sql, gte } from "drizzle-orm";
 import {
   db,
   inventoryTable,
@@ -191,5 +191,101 @@ router.get("/inventory/shortages", async (_req, res): Promise<void> => {
   );
   res.json(result);
 });
+router.post("/inventory/reallocate", async (req, res): Promise<void> => {
+  console.log("REALLOCATE HIT");
+  console.log(req.body);
+  try {
+    const {
+      sourceLocationId,
+      destinationLocationId,
+      productId,
+      quantity,
+    } = req.body;
+    console.log("REALLOCATE REQUEST:", {
+      sourceLocationId,
+      destinationLocationId,
+      productId,
+      quantity,
+    });
+    if (
+      !sourceLocationId ||
+      !destinationLocationId ||
+      !productId ||
+      !quantity
+    ) {
+      res.status(400).json({
+        error: "Missing required fields",
+      });
+      return;
+    }
 
+    const [sourceInventory] = await db
+      .select()
+      .from(inventoryTable)
+      .where(
+        and(
+          eq(inventoryTable.locationId, sourceLocationId),
+          eq(inventoryTable.productId, productId),
+        ),
+      );
+
+    if (!sourceInventory) {
+      res.status(404).json({
+        error: "Source inventory not found",
+      });
+      return;
+    }
+
+    if (sourceInventory.quantity < quantity) {
+      res.status(400).json({
+        error: "Not enough stock available",
+      });
+      return;
+    }
+
+    const [destinationInventory] = await db
+      .select()
+      .from(inventoryTable)
+      .where(
+        and(
+          eq(inventoryTable.locationId, destinationLocationId),
+          eq(inventoryTable.productId, productId),
+        ),
+      );
+
+    if (!destinationInventory) {
+      res.status(404).json({
+        error: "Destination inventory not found",
+      });
+      return;
+    }
+
+    await db
+      .update(inventoryTable)
+      .set({
+        quantity: sourceInventory.quantity - quantity,
+      })
+      .where(eq(inventoryTable.id, sourceInventory.id));
+
+    await db
+      .update(inventoryTable)
+      .set({
+        quantity: destinationInventory.quantity + quantity,
+      })
+      .where(eq(inventoryTable.id, destinationInventory.id));
+
+    res.json({
+      success: true,
+      transferred: quantity,
+      from: sourceLocationId,
+      to: destinationLocationId,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Transfer failed",
+    });
+  }
+});
 export default router;
