@@ -24,18 +24,24 @@ async function ensureSchema() {
   );
 }
 
-ensureSchema()
-  .then(() => ensureSeeded())
-  .then(() => {
-    app.listen(port, (err) => {
-      if (err) {
-        logger.error({ err }, "Error listening on port");
-        process.exit(1);
-      }
-      logger.info({ port }, "Server listening");
-    });
-  })
-  .catch((err) => {
-    logger.error({ err }, "Startup failed, aborting");
+async function runStartupTasks() {
+  try {
+    await ensureSchema();
+  } catch (err) {
+    logger.warn({ err }, "ensureSchema failed (DB may be warming up) — skipping");
+  }
+  try {
+    await ensureSeeded();
+  } catch (err) {
+    logger.warn({ err }, "ensureSeeded failed (DB may be warming up) — skipping");
+  }
+}
+
+app.listen(port, (err) => {
+  if (err) {
+    logger.error({ err }, "Error listening on port");
     process.exit(1);
-  });
+  }
+  logger.info({ port }, "Server listening");
+  void runStartupTasks();
+});
