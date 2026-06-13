@@ -4,19 +4,7 @@ import { ensureSeeded } from "./seed";
 import { pool } from "@workspace/db";
 import { setDbAvailable } from "./db-status";
 
-const rawPort = process.env["PORT"];
-
-if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
-}
-
-const port = Number(rawPort);
-
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
+const port = Number(process.env.PORT || 3000);
 
 async function ensureSchema() {
   if (process.env.NODE_ENV !== "production") return;
@@ -66,14 +54,26 @@ function scheduleDbRetry() {
           setDbAvailable(true);
           clearInterval(interval);
           logger.info("Database came online — switching to live data");
-          try { await ensureSchema(); } catch (err) { logger.warn({ err }, "ensureSchema failed on retry"); }
-          try { await ensureSeeded(); } catch (err) { logger.warn({ err }, "ensureSeeded failed on retry"); }
+          try {
+            await ensureSchema();
+          } catch (err) {
+            logger.warn({ err }, "ensureSchema failed on retry");
+          }
+          try {
+            await ensureSeeded();
+          } catch (err) {
+            logger.warn({ err }, "ensureSeeded failed on retry");
+          }
         } else if (attempts >= MAX) {
           clearInterval(interval);
-          logger.warn("Database still unavailable after retries — continuing with mock data");
+          logger.warn(
+            "Database still unavailable after retries — continuing with mock data",
+          );
         }
       })
-      .catch(() => { /* ignore */ });
+      .catch(() => {
+        /* ignore */
+      });
   }, 15000);
 }
 
