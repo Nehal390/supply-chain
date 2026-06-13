@@ -1,3 +1,5 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -43,5 +45,17 @@ app.use(sessionMiddleware);
 
 app.use("/api", mockFallbackMiddleware);
 app.use("/api", router);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const frontendPath = path.resolve(
+  __dirname,
+  "../../supply-chain/dist/public"
+);
+
+app.use(express.static(frontendPath));
+
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(frontendPath, "index.html"));
+});
 export default app;
