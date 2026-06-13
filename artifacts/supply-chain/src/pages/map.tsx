@@ -139,7 +139,7 @@ export default function MapView() {
     <div className="space-y-4 h-[calc(100vh-8rem)] flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Network Map</h1>
-        <p className="text-muted-foreground">Live view of warehouses and micro-warehouses across India.</p>
+        <p className="text-muted-foreground">Live view of Distribution Hubs and Local Partner Shops across India.</p>
       </div>
 
       <Card className="flex-1 overflow-hidden border-primary/20 shadow-md">
@@ -171,7 +171,7 @@ export default function MapView() {
                   <div className="font-semibold text-base mb-1">{loc.name}</div>
                   <div className="text-xs text-muted-foreground mb-2">{loc.city}, {loc.state}</div>
                   <div className="flex gap-2">
-                    <Badge variant="outline" className="text-[10px]">{loc.type}</Badge>
+                    <Badge variant="outline" className="text-[10px]">{loc.type === "micro" ? "Local Partner Shop" : "Distribution Hub"}</Badge>
                     <Badge 
                       variant={loc.stockStatus === 'healthy' ? 'default' : loc.stockStatus === 'critical' ? 'destructive' : 'secondary'}
                       className="text-[10px]"

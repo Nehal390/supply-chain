@@ -16,6 +16,14 @@ router.get("/analytics/summary", async (_req, res): Promise<void> => {
   const [locCount] = await db
     .select({ c: sql<number>`count(*)::int` })
     .from(locationsTable);
+  const [warehouseCount] = await db
+    .select({ c: sql<number>`count(*)::int` })
+    .from(locationsTable)
+    .where(eq(locationsTable.type, "warehouse"));
+  const [microCount] = await db
+    .select({ c: sql<number>`count(*)::int` })
+    .from(locationsTable)
+    .where(eq(locationsTable.type, "micro"));
   const [prodCount] = await db
     .select({ c: sql<number>`count(*)::int` })
     .from(productsTable);
@@ -56,6 +64,8 @@ router.get("/analytics/summary", async (_req, res): Promise<void> => {
 
   res.json({
     totalLocations: locCount?.c ?? 0,
+    totalWarehouses: warehouseCount?.c ?? 0,
+    totalMicroWarehouses: microCount?.c ?? 0,
     totalProducts: prodCount?.c ?? 0,
     totalUnits: unitsRow?.s ?? 0,
     criticalShortages: criticalRow?.c ?? 0,

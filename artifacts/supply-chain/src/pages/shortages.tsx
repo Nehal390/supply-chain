@@ -23,7 +23,7 @@ export default function Shortages() {
             <AlertTriangle className="w-8 h-8" />
             Critical Shortages
           </h1>
-          <p className="text-muted-foreground">Inventory below minimum thresholds requiring immediate action.</p>
+          <p className="text-muted-foreground">Inventory below minimum thresholds — resolved by nearby Local Partner Shops with excess inventory.</p>
         </div>
       </div>
 
@@ -46,7 +46,7 @@ export default function Shortages() {
               <TableHead>Product</TableHead>
               <TableHead className="text-right">Current</TableHead>
               <TableHead className="text-right">Shortfall</TableHead>
-              <TableHead>Nearest Alternative Source</TableHead>
+              <TableHead>Nearby Shop with Excess Inventory</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

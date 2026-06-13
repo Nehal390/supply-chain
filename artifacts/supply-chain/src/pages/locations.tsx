@@ -96,7 +96,7 @@ export default function Locations() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Locations</h1>
-          <p className="text-muted-foreground">Manage warehouses and micro-fulfillment centers.</p>
+          <p className="text-muted-foreground">Manage Distribution Hubs and Local Partner Shops.</p>
         </div>
 
         {user?.role === 'admin' && (
@@ -122,8 +122,8 @@ export default function Locations() {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl><SelectTrigger data-testid="select-type"><SelectValue/></SelectTrigger></FormControl>
                           <SelectContent>
-                            <SelectItem value="warehouse">Warehouse</SelectItem>
-                            <SelectItem value="micro">Micro</SelectItem>
+                            <SelectItem value="warehouse">Distribution Hub</SelectItem>
+                            <SelectItem value="micro">Local Partner Shop</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage/>
@@ -217,7 +217,7 @@ export default function Locations() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="capitalize">{loc.type}</Badge>
+                    <Badge variant="outline">{loc.type === "micro" ? "Local Partner Shop" : "Distribution Hub"}</Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1 text-muted-foreground">

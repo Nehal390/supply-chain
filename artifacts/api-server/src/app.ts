@@ -5,6 +5,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { sessionMiddleware } from "./lib/session";
+import { mockFallbackMiddleware } from "./mock-middleware";
 
 const app: Express = express();
 
@@ -40,6 +41,7 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
 
+app.use("/api", mockFallbackMiddleware);
 app.use("/api", router);
 
 export default app;

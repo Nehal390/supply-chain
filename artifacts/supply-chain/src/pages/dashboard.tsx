@@ -40,7 +40,7 @@ export default function Dashboard() {
                 <>
                   <div className="text-2xl font-bold">{summary?.totalLocations || 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {summary?.totalWarehouses} Warehouses • {summary?.totalMicroWarehouses} Micro
+                    {summary?.totalWarehouses} Hubs • {summary?.totalMicroWarehouses} Local Partner Shops
                   </p>
                 </>
               )}

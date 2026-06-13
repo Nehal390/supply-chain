@@ -44,7 +44,7 @@ export default function Landing() {
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Coordinate a national network of large warehouses and last-mile micro-warehouses from a single, operations-grade command center.
+            Coordinate a national network of large distribution hubs and last-mile Local Partner Shops from a single, operations-grade command center.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
@@ -62,8 +62,8 @@ export default function Landing() {
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
               <Globe2 className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold">Micro-Warehouse Network</h3>
-            <p className="text-muted-foreground">Distribute inventory closer to demand with our mesh network of urban micro-warehouses across India.</p>
+            <h3 className="text-xl font-bold">Local Partner Shop Network</h3>
+            <p className="text-muted-foreground">Distribute inventory closer to demand with our mesh network of Local Partner Shops across India.</p>
           </div>
           
           <div className="p-6 rounded-2xl bg-card border shadow-sm flex flex-col gap-4 group hover:border-accent/50 transition-colors">
