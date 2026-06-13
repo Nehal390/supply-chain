@@ -7,7 +7,7 @@ globalThis.require = createRequire(import.meta.url);
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 
 await esbuild({
-  entryPoints: [path.resolve(artifactDir, "src/seed.ts")],
+  entryPoints: [path.resolve(artifactDir, "src/seed-cli.ts")],
   platform: "node",
   bundle: true,
   format: "esm",

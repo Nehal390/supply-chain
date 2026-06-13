@@ -227,10 +227,4 @@ async function ensureSeeded() {
   logger.info("Seed complete");
 }
 
-ensureSeeded()
-  .then(() => pool.end())
-  .catch((err) => {
-    logger.error({ err }, "Seed failed");
-    pool.end();
-    process.exit(1);
-  });
+export { ensureSeeded };
