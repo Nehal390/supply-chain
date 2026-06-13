@@ -80,32 +80,7 @@ export default function Analytics() {
   };
 
   const isLoadingEfficiency = false;
-  // { data: forecast, isLoading: isLoadingForecast } =
-  // useGetDemandForecast();
-  const forecast = [
-    {
-      product: "Basmati Rice 5kg",
-      forecast: [
-        { date: "Mon", expectedDemand: 40 },
-        { date: "Tue", expectedDemand: 55 },
-        { date: "Wed", expectedDemand: 60 },
-        { date: "Thu", expectedDemand: 50 },
-        { date: "Fri", expectedDemand: 70 },
-      ],
-    },
-    {
-      product: "Wheat Flour 10kg",
-      forecast: [
-        { date: "Mon", expectedDemand: 30 },
-        { date: "Tue", expectedDemand: 45 },
-        { date: "Wed", expectedDemand: 50 },
-        { date: "Thu", expectedDemand: 48 },
-        { date: "Fri", expectedDemand: 65 },
-      ],
-    },
-  ];
-
-  const isLoadingForecast = false;
+  const { data: forecast, isLoading: isLoadingForecast } = useGetDemandForecast();
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -449,13 +424,13 @@ export default function Analytics() {
             ) : (
               <div className="space-y-6">
                 {forecast?.map((item) => (
-                  <div key={item.product} className="space-y-2">
+                  <div key={item.productName} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <h4
                         className="text-sm font-semibold truncate pr-4"
-                        title={item.product}
+                        title={item.productName}
                       >
-                        {item.product}
+                        {item.productName}
                       </h4>
                       {item.daysUntilStockout &&
                         item.daysUntilStockout <= 7 && (

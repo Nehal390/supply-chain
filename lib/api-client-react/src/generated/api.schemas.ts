@@ -56,8 +56,18 @@ export interface User {
   createdAt: string;
 }
 
+export interface RegisterBody {
+  email: string;
+  /** @minLength 6 */
+  password: string;
+  name: string;
+  city: string;
+  role: Role;
+}
+
 export interface LoginBody {
   email: string;
+  password: string;
 }
 
 export interface MeResponse {

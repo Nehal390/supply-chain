@@ -15,10 +15,24 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
- * @summary Login by email (demo)
+ * @summary Create a new account
+ */
+export const registerBodyPasswordMin = 6;
+
+export const RegisterBody = zod.object({
+  email: zod.string().email(),
+  password: zod.string().min(registerBodyPasswordMin),
+  name: zod.string(),
+  city: zod.string(),
+  role: zod.enum(["admin", "manager", "retail", "customer"]),
+});
+
+/**
+ * @summary Login with email and password
  */
 export const LoginBody = zod.object({
   email: zod.string(),
+  password: zod.string(),
 });
 
 export const LoginResponse = zod.object({

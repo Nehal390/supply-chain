@@ -8,6 +8,7 @@ import { AppShell } from "@/components/app-shell";
 
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
+import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
 import MapView from "@/pages/map";
 import Locations from "@/pages/locations";
@@ -39,6 +40,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
       <Route path="/dashboard"><ProtectedRoute component={Dashboard} /></Route>
       <Route path="/map"><ProtectedRoute component={MapView} /></Route>
       <Route path="/locations"><ProtectedRoute component={Locations} /></Route>

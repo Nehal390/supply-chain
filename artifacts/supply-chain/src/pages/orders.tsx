@@ -29,14 +29,11 @@ export default function Orders() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   
-  const { data: orders, isLoading } = useListOrders({
-    query: {
-      queryKey: getListOrdersQueryKey({ customerId: user?.role === 'customer' ? user.id : undefined })
-    },
-    request: {
-      // If the API requires query params, though it uses standard orval pattern
-    }
-  });
+  const customerIdParam = user?.role === 'customer' ? user.id : undefined;
+  const { data: orders, isLoading } = useListOrders(
+    { customerId: customerIdParam },
+    { query: { queryKey: getListOrdersQueryKey({ customerId: customerIdParam }) } }
+  );
 
   const { data: products } = useListProducts();
 

@@ -82,7 +82,7 @@ export default function Dashboard() {
             <CardContent>
               {isLoadingSummary ? <Skeleton className="h-8 w-20" /> : (
                 <>
-                  <div className="text-2xl font-bold">{summary?.openOrders || 0}</div>
+                  <div className="text-2xl font-bold">{summary?.ordersByStatus?.filter(s => ["pending","dispatched","in_transit"].includes(s.status)).reduce((a,b) => a + b.count, 0) ?? 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">Pending & In Transit</p>
                 </>
               )}

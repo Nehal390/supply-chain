@@ -4,28 +4,30 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
-import { Box, ChevronDown, ChevronUp, Eye, EyeOff, UserCircle } from "lucide-react";
+import { Box, Eye, EyeOff } from "lucide-react";
 import { Link, Redirect } from "wouter";
 
-const DEMO_USERS = [
-  { email: "admin@scn.in", label: "Admin", role: "Network Administrator", password: "demo1234" },
-  { email: "manager@scn.in", label: "Manager", role: "Warehouse Operations", password: "demo1234" },
-  { email: "retail@scn.in", label: "Retail", role: "Retail Partner", password: "demo1234" },
-  { email: "customer@scn.in", label: "Customer", role: "End Customer", password: "demo1234" },
+const ROLES = [
+  { value: "admin", label: "Network Administrator" },
+  { value: "manager", label: "Warehouse Operations" },
+  { value: "retail", label: "Retail Partner" },
+  { value: "customer", label: "End Customer" },
 ];
 
-export default function Login() {
-  const { login, isLoggingIn, loginError, user } = useAuth();
+export default function Register() {
+  const { register, isRegistering, registerError, user } = useAuth();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [city, setCity] = useState("");
+  const [role, setRole] = useState<string>("customer");
   const [showPassword, setShowPassword] = useState(false);
-  const [showDemo, setShowDemo] = useState(false);
 
   if (user) return <Redirect to="/dashboard" />;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login({ data: { email, password } });
+    register({ data: { name, email, password, city, role: role as any } });
   };
 
   return (
@@ -36,21 +38,32 @@ export default function Login() {
             <Box className="w-8 h-8" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Smart Supply Chain</h1>
-          <p className="text-muted-foreground">Sign in to access the network command center</p>
+          <p className="text-muted-foreground">Create your account to get started</p>
         </div>
 
         <Card className="border-primary/10 shadow-lg shadow-primary/5">
           <form onSubmit={handleSubmit}>
             <CardHeader>
-              <CardTitle>Sign in</CardTitle>
-              <CardDescription>Enter your email and password to continue.</CardDescription>
+              <CardTitle>Create account</CardTitle>
+              <CardDescription>Fill in your details to join the network.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {loginError && (
+              {registerError && (
                 <div className="rounded-md bg-destructive/10 text-destructive text-sm px-3 py-2">
-                  {loginError}
+                  {registerError}
                 </div>
               )}
+              <div className="space-y-1.5">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  placeholder="Arjun Sharma"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  autoComplete="name"
+                />
+              </div>
               <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -69,11 +82,12 @@ export default function Login() {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
+                    placeholder="At least 6 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    autoComplete="current-password"
+                    minLength={6}
+                    autoComplete="new-password"
                     className="pr-10"
                   />
                   <button
@@ -86,51 +100,42 @@ export default function Login() {
                   </button>
                 </div>
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  placeholder="Mumbai"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                >
+                  {ROLES.map((r) => (
+                    <option key={r.value} value={r.value}>{r.label}</option>
+                  ))}
+                </select>
+              </div>
             </CardContent>
             <CardFooter className="flex-col gap-3">
-              <Button type="submit" className="w-full" disabled={isLoggingIn}>
-                {isLoggingIn ? "Signing in…" : "Sign in"}
+              <Button type="submit" className="w-full" disabled={isRegistering}>
+                {isRegistering ? "Creating account…" : "Create account"}
               </Button>
               <p className="text-sm text-muted-foreground text-center">
-                Don't have an account?{" "}
-                <Link href="/register" className="text-primary underline underline-offset-4">
-                  Create one
+                Already have an account?{" "}
+                <Link href="/login" className="text-primary underline underline-offset-4">
+                  Sign in
                 </Link>
               </p>
             </CardFooter>
           </form>
-        </Card>
-
-        <Card className="border-dashed">
-          <button
-            type="button"
-            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => setShowDemo((v) => !v)}
-          >
-            <span>Demo accounts (password: demo1234)</span>
-            {showDemo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-          {showDemo && (
-            <CardContent className="pt-0 space-y-2">
-              {DEMO_USERS.map((demo) => (
-                <button
-                  key={demo.email}
-                  type="button"
-                  className="w-full flex items-center gap-3 rounded-lg border px-3 py-2.5 hover:border-primary/50 hover:bg-primary/5 transition-all text-left disabled:opacity-50"
-                  disabled={isLoggingIn}
-                  onClick={() => login({ data: { email: demo.email, password: demo.password } })}
-                >
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <UserCircle className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="font-medium text-sm">{demo.label}</span>
-                    <span className="text-xs text-muted-foreground truncate">{demo.email} · {demo.role}</span>
-                  </div>
-                </button>
-              ))}
-            </CardContent>
-          )}
         </Card>
       </div>
     </div>

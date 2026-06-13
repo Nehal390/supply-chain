@@ -28,14 +28,11 @@ export default function Inventory() {
   const [search, setSearch] = useState("");
   const [filterLocation, setFilterLocation] = useState<string>("all");
   
-  const { data: inventory, isLoading } = useListInventory({
-    query: {
-      queryKey: getListInventoryQueryKey({ locationId: filterLocation !== "all" ? Number(filterLocation) : undefined })
-    },
-    request: {
-      // Pass query params here if API requires them...
-    }
-  });
+  const locationIdParam = filterLocation !== "all" ? Number(filterLocation) : undefined;
+  const { data: inventory, isLoading } = useListInventory(
+    { locationId: locationIdParam },
+    { query: { queryKey: getListInventoryQueryKey({ locationId: locationIdParam }) } }
+  );
 
   const { data: locations } = useListLocations();
   const { data: products } = useListProducts();

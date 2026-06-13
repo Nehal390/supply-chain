@@ -41,11 +41,7 @@ export default function Assistant() {
       const contextStr = `Current context: ${activeAlerts} active alerts, ${criticalShortages} critical shortages. User role: ${user?.role}.`;
 
       const response = await chatMutation.mutateAsync({
-        data: {
-          message: input,
-          history: messages,
-          context: [{ role: "system", content: contextStr }]
-        }
+        data: { message: `${contextStr}\n\n${input}` }
       });
 
       setMessages([...newHistory, { role: "assistant", content: response.reply }]);

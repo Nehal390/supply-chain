@@ -36,11 +36,33 @@ paths:
   # -----------------------------------------------------------------------
   # Auth
   # -----------------------------------------------------------------------
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Create a new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RegisterBody" }
+      responses:
+        "201":
+          description: Account created and logged in
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/User" }
+        "400":
+          description: Validation error or email already taken
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApiError" }
+
   /auth/login:
     post:
       operationId: login
       tags: [auth]
-      summary: Login by email (demo)
+      summary: Login with email and password
       requestBody:
         required: true
         content:
@@ -633,11 +655,22 @@ components:
         createdAt: { type: string, format: date-time }
       required: [id, email, name, role, city, createdAt]
 
+    RegisterBody:
+      type: object
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 6 }
+        name: { type: string }
+        city: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+      required: [email, password, name, city, role]
+
     LoginBody:
       type: object
       properties:
         email: { type: string }
-      required: [email]
+        password: { type: string }
+      required: [email, password]
 
     MeResponse:
       type: object
