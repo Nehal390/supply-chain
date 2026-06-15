@@ -7,7 +7,7 @@ It solves a real-world problem: when a warehouse runs out of stock, instead of f
 ---
 
 ## Live Demo  
-[Open Application](https://supply-chain-2-5sxa.onrender.com)
+[Open Application](https://supply-chain-136456965443.asia-south1.run.app)
 
 ## Repository  
 [View Source Code](https://github.com/Nehal390/supply-chain)
