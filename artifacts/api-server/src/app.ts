@@ -17,14 +17,14 @@ app.use(
   (pinoHttp as any).default({
     logger,
     serializers: {
-      req(req) {
-        return {
-          id: req.id,
-          method: req.method,
-          url: req.url?.split("?")[0],
-        };
-      },
-      res(res) {
+  req(req: any) {
+    return {
+      id: req.id,
+      method: req.method,
+      url: req.url?.split("?")[0],
+    };
+  }, 
+     res(res: any) { 
         return {
           statusCode: res.statusCode,
         };
