@@ -3,7 +3,7 @@ import { fileURLToPath } from "url";
 import express, { type Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import pinoHttp from "pino-http";
+import * as pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { sessionMiddleware } from "./lib/session";
@@ -14,7 +14,7 @@ const app: Express = express();
 app.set("trust proxy", 1);
 
 app.use(
-  pinoHttp({
+  (pinoHttp as any).default({
     logger,
     serializers: {
       req(req) {
